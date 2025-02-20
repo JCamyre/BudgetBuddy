@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Response, Cookie, Request
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 from supabase import create_client
@@ -6,8 +6,12 @@ import os
 from datetime import datetime, timezone
 import jwt
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.security import APIKeyCookie
 
 router = APIRouter()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+cookie_auth = APIKeyCookie(name="access_token", auto_error=False)
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -48,7 +52,7 @@ async def register_user(user: UserCreate):
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/api/users/login")
-async def login_user(user: UserLogin):
+async def login_user(user: UserLogin, response: Response):
     supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     
     try:
@@ -56,13 +60,39 @@ async def login_user(user: UserLogin):
             "email": user.email,
             "password": user.password
         })
-        print("Auth Response:", auth_response)
-        user_data = supabase.table("users").select("*").eq("id", auth_response.user.id).single().execute()
-        return {
+        response.set_cookie(
+            key="access_token", 
+            value=auth_response.session.access_token, 
+            httponly=True,  # Prevent JavaScript access
+            secure=True,    # Use HTTPS
+            samesite='Lax'  # Adjust according to your needs
+        )
+        return{
             "access_token": auth_response.session.access_token,
-            "token_type": "bearer",
-            "user": user_data.data
+            "message": "Login successful"
         }
+        # print("Auth Response:", auth_response)
+        # user_data = supabase.table("users").select("*").eq("id", auth_response.user.id).single().execute()
+        # return {
+        #     "access_token": auth_response.session.access_token,
+        #     "token_type": "bearer",
+        #     "user": user_data.data
+        # }
+
     except Exception as e:
         print("Login Error:", str(e))
         raise HTTPException(status_code=401, detail="Invalid credentials")
+async def get_current_user(access_token: str = Cookie(default=None)):
+    supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+    if access_token is None:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+
+    print("Current Token:", access_token)
+
+    # Verify the token with Supabase
+    user = supabase.auth.get_user(access_token)
+    print("Current User:", user)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    
+    return user.user

@@ -1,17 +1,17 @@
 from fastapi import FastAPI
-from server.routes import expenses_router, goals_router, users_router
+from server.routes import expenses_router, goals_router, users_router, budgets_router
 from supabase import create_client
 import os
 import dotenv
 
 dotenv.load_dotenv()
 
-app = FastAPI()
+app = FastAPI(swagger_ui_parameters={"withCredentials": True})
 
 app.include_router(expenses_router)
 app.include_router(goals_router)
 app.include_router(users_router)
-
+app.include_router(budgets_router)
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
