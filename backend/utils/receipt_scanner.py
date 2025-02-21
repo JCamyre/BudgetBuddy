@@ -5,10 +5,7 @@ MIT License
 
 https://github.com/clovaai/donut
 """
-import gradio as gr
-import torch
 from PIL import Image
-
 from donut import DonutModel
 
 class ReceiptScanner:
@@ -32,8 +29,3 @@ class ReceiptScanner:
         )["predictions"][0]
         
         return output
-
-# Example usage:
-# scanner = ReceiptScanner()
-# result = scanner.scan_receipt("./receipt.jpg")
-# print(result)
