@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
-from server.routes import expenses_router, goals_router
+from server.routes import expenses_router, goals_router, tracking_router
 from supabase import create_client
 import os
 import dotenv
@@ -11,6 +11,7 @@ app = FastAPI()
 
 app.include_router(expenses_router)
 app.include_router(goals_router)
+app.include_router(tracking_router)
 
 @app.get("/")
 async def root():
