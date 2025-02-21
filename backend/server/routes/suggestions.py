@@ -1,13 +1,20 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Literal
+import httpx
+import json
+from dotenv import load_dotenv
+import os
+import together
+
+load_dotenv()
 
 router = APIRouter()
 
+together_client = together.Client()
+
 # Temp until Aryan's PR is merged
 class Budget(BaseModel):
-    """Model representing a user."""
-
     id: Optional[str] = None
     name: str
     spending_limit: float
@@ -15,67 +22,131 @@ class Budget(BaseModel):
     user_id: Optional[str] = None
 
 class BudgetQuestionnaire(BaseModel):
-    monthly_income: float
-    fixed_expenses: float
-    location: str  # City or region
-    household_size: int
+    financial_situation: str  # Open-ended description of current financial situation
+    spending_habits: str  # Description of typical spending patterns
+    financial_goals: str  # Short and long term financial objectives
+    lifestyle_preferences: str  # Description of lifestyle and priorities
+    financial_concerns: str  # Any specific financial worries or challenges
 
 class GoalQuestionnaire(BaseModel):
-    current_savings: float
-    monthly_income: float
-    risk_tolerance: Literal['low', 'medium', 'high']
-    primary_goal: Literal['emergency_fund', 'retirement', 'house_down_payment', 'debt_payoff']
-    target_timeline_months: int
+    current_situation: str  # Description of current financial position
+    future_aspirations: str  # Long-term life and financial aspirations
+    risk_comfort: str  # Description of comfort level with financial risk
+    timeline_description: str  # When they want to achieve their goals
+    constraints: str  # Any limitations or obligations affecting their goals
 
-@router.post("/suggest-budget", response_model=Budget)
+async def get_llm_response(messages):
+    """Get response from DeepSeek model via Together."""
+    response = together_client.chat.completions.create(
+        model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+        messages=messages
+    )
+    return response.choices[0].message.content
+
+@router.post("/suggest-budget/", response_model=Budget)
 async def suggest_budget(questionnaire: BudgetQuestionnaire):
-    """Suggest a budget based on user's financial situation."""
+    """Suggest a budget based on user's financial situation using LLM."""
     try:
-        # Calculate disposable income
-        disposable_income = questionnaire.monthly_income - questionnaire.fixed_expenses
+        messages = [
+            {
+                "role": "system",
+                "content": """You are a knowledgeable financial advisor. Analyze the user's financial situation 
+                and suggest a monthly budget. 
+                OUTPUT INSTRUCTIONS, FOLLOW THEM EXACTLY. DO NOT VEER OFF FROM FORMAT. DO NOT INCLUDE ANY OTHER TEXT OR EXPLANATIONS:
+                Your response must be a valid JSON string in this exact format:
+                {"spending_limit": 1234.56, "duration": "monthly", "budget_name": "Basic Budget"}
+                """
+            },
+            {
+                "role": "user",
+                "content": f"""
+                Financial Situation: {questionnaire.financial_situation}
+                Spending Habits: {questionnaire.spending_habits}
+                Financial Goals: {questionnaire.financial_goals}
+                Lifestyle Preferences: {questionnaire.lifestyle_preferences}
+                Financial Concerns: {questionnaire.financial_concerns}
+                """
+            }
+        ]
         
-        # Simple budget suggestion logic
-        # Recommend saving 20% of disposable income
-        recommended_spending = disposable_income * 0.8
+        llm_response = await get_llm_response(messages)
         
-        # Create budget suggestion
-        budget = Budget(
-            name="Suggested Monthly Budget",
-            spending_limit=recommended_spending,
-            duration="monthly",
-            user_id=None  # This can be set later if needed
+        # Strip any potential whitespace or extra characters
+        llm_response = llm_response.strip()
+        
+        llm_response = llm_response.split("</think>")[1]
+        
+        # Add error handling for JSON parsing
+        try:
+            budget_suggestion = json.loads(llm_response)
+        except json.JSONDecodeError as json_error:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to parse LLM response as JSON. Response: {llm_response}"
+            )
+        
+        # Validate required fields
+        required_fields = ["budget_name", "spending_limit", "duration"]
+        missing_fields = [field for field in required_fields if field not in budget_suggestion]
+        if missing_fields:
+            raise HTTPException(
+                status_code=500,
+                detail=f"LLM response missing required fields: {missing_fields}"
+            )
+        
+        return Budget(
+            name=budget_suggestion["budget_name"],
+            spending_limit=budget_suggestion["spending_limit"],
+            duration=budget_suggestion["duration"],
+            user_id=None # TODO: Add user_id
         )
         
-        return budget
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/suggest-goals/", response_model=List[str])
+async def suggest_goals(questionnaire: GoalQuestionnaire):
+    """Suggest financial goals based on user's situation using LLM."""
+    try:
+        messages = [
+            {
+                "role": "system",
+                "content": """You are a knowledgeable financial advisor. Analyze the user's financial situation 
+                and suggest 2-4 specific, actionable financial goals. Return them as a JSON array of strings.
+                OUTPUT INSTRUCTIONS, FOLLOW THEM EXACTLY. DO NOT VEER OFF FROM FORMAT. DO NOT INCLUDE ANY OTHER TEXT OR EXPLANATIONS:
+                Your response must be a valid JSON string in this exact format:
+                DO NOT INCLUDE ANY OTHER TEXT OR EXPLANATIONS:
+                ["Goal 1", "Goal 2", "Goal 3"]
+                """
+            },
+            {
+                "role": "user",
+                "content": f"""
+                Current Situation: {questionnaire.current_situation}
+                Future Aspirations: {questionnaire.future_aspirations}
+                Risk Comfort: {questionnaire.risk_comfort}
+                Timeline: {questionnaire.timeline_description}
+                Constraints: {questionnaire.constraints}
+                """
+            }
+        ]
+        
+        
+        
+        llm_response = await get_llm_response(messages)
+        
+        llm_response = llm_response.split("</think>")[1]
+        
+        # Add error handling for JSON parsing
+        try:
+            budget_suggestion = json.loads(llm_response)
+        except json.JSONDecodeError as json_error:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to parse LLM response as JSON. Response: {llm_response}"
+            )
+            
+        return budget_suggestion
+        
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-@router.post("/suggest-goals", response_model=List[str])
-async def suggest_goals(questionnaire: GoalQuestionnaire):
-    """Suggest financial goals based on user's situation."""
-    suggestions = []
-    
-    # Emergency fund goal
-    if questionnaire.primary_goal == "emergency_fund":
-        monthly_expenses = questionnaire.monthly_income * 0.7  # Estimated expenses
-        target_emergency_fund = monthly_expenses * 6  # 6 months of expenses
-        suggestions.append(f"Build emergency fund of ${target_emergency_fund:,.2f}")
-    
-    # Retirement goal
-    elif questionnaire.primary_goal == "retirement":
-        yearly_contribution = questionnaire.monthly_income * 0.15 * 12
-        suggestions.append(f"Aim to contribute ${yearly_contribution:,.2f} annually to retirement")
-    
-    # House down payment
-    elif questionnaire.primary_goal == "house_down_payment":
-        # Assume average house price of $300,000 and 20% down payment
-        down_payment = 300000 * 0.2
-        monthly_saving = down_payment / questionnaire.target_timeline_months
-        suggestions.append(f"Save ${monthly_saving:,.2f} monthly for house down payment")
-    
-    # Debt payoff
-    elif questionnaire.primary_goal == "debt_payoff":
-        monthly_allocation = questionnaire.monthly_income * 0.25
-        suggestions.append(f"Allocate ${monthly_allocation:,.2f} monthly to debt repayment")
-    
-    return suggestions
