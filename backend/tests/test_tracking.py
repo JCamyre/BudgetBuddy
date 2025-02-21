@@ -1,10 +1,11 @@
 import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
-from server.main import app
+from server import app
 import json
 from unittest.mock import patch
 import os
+import sys
 
 client = TestClient(app)
 
