@@ -23,6 +23,8 @@ class UserLogin(BaseModel):
     password: str
 
 class User(BaseModel):
+    """Model representing a user."""
+
     id: Optional[str] = None
     email: EmailStr
     full_name: str
@@ -30,6 +32,19 @@ class User(BaseModel):
 
 @router.post("/api/users/register", response_model=User)
 async def register_user(user: UserCreate):
+    """
+    Register a new user and return the user object.
+
+    Args:
+        user (UserCreate): The user information (email, password, full name) for registration.
+
+    Returns:
+        User: The newly registered user object.
+
+    Raises:
+        HTTPException: If registration fails due to existing email or other errors.
+    """
+
     supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     
     try:
@@ -53,6 +68,20 @@ async def register_user(user: UserCreate):
 
 @router.post("/api/users/login")
 async def login_user(user: UserLogin, response: Response):
+    """
+    Authenticate a user and return the access token.
+
+    Args:
+        user (UserCreate): The user credentials (email and password) for authentication.
+        response (Response): The response object to set the cookie.
+
+    Returns:
+        dict: A dictionary containing the access token and successful message.
+
+    Raises:
+        HTTPException: If the credentials are invalid or authentication fails.
+    """
+
     supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     
     try:
@@ -83,6 +112,17 @@ async def login_user(user: UserLogin, response: Response):
         print("Login Error:", str(e))
         raise HTTPException(status_code=401, detail="Invalid credentials")
 async def get_current_user(access_token: str = Cookie(default=None)):
+    """
+    Retrieve the current authenticated user.
+
+    Args:
+        access_token (str): The access token from the cookie.
+
+    Returns:
+        User: The current user object.
+    """
+    
+
     supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     if access_token is None:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
