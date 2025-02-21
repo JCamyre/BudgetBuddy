@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500&display=swap');
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -14,8 +16,14 @@
   }
 }
 
+.be-vietnam-pro-medium {
+  font-family: "Be Vietnam Pro", serif;
+  font-weight: 500;
+  font-style: normal;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Be Vietnam Pro", serif;
 }
