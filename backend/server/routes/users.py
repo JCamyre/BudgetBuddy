@@ -127,11 +127,8 @@ async def get_current_user(access_token: str = Cookie(default=None)):
     if access_token is None:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
-    print("Current Token:", access_token)
-
     # Verify the token with Supabase
     user = supabase.auth.get_user(access_token)
-    print("Current User:", user)
     if user is None:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     

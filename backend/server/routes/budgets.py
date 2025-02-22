@@ -30,11 +30,9 @@ async def create_budget(budget: Budget, current_user: dict = Depends(get_current
     """
 
     supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
-    print("Current User:", current_user)  
     budget.user_id = current_user.id  
 
     response = supabase.table("budgets").insert(budget.dict(exclude={"id"})).execute()
-    print(response.data)
 
     if not response.data:
         raise HTTPException(status_code=response.status_code, detail=response.data)
@@ -73,7 +71,6 @@ async def delete_budget(budget_id: str):
     supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     
     data = supabase.table("budgets").delete().eq("id", budget_id).execute()
-    print(data)
     if not data.data:
         raise HTTPException(status_code=400, detail="Budget not found")
 
