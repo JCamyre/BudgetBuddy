@@ -1,20 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
-from supabase import create_client
 import os
 from .users import get_current_user  # Assuming you have a way to get the current user
 from typing import Optional, Literal
 from pydantic import BaseModel
-
+from ..supabase_client import supabase_client
+from ..schemas import Budget
 router = APIRouter()
 
-class Budget(BaseModel):
-    """Model representing a user."""
-
-    id: Optional[str] = None
-    name: str
-    spending_limit: float
-    duration: Literal['weekly', 'monthly', 'yearly']
-    user_id: Optional[str] = None
 
 @router.post("/api/budgets/create", response_model=Budget)
 async def create_budget(budget: Budget, current_user: dict = Depends(get_current_user)):
@@ -29,10 +21,9 @@ async def create_budget(budget: Budget, current_user: dict = Depends(get_current
         Budget: The created budget object.
     """
 
-    supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     budget.user_id = current_user.id  
 
-    response = supabase.table("budgets").insert(budget.dict(exclude={"id"})).execute()
+    response = supabase_client.table("budgets").insert(budget.dict(exclude={"id"})).execute()
 
     if not response.data:
         raise HTTPException(status_code=response.status_code, detail=response.data)
@@ -50,14 +41,13 @@ async def view_budgets(current_user: dict = Depends(get_current_user)):
     Returns:
         List[Budget]: The list of budgets for the current user.
     """
-    supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     
-    data = supabase.table("budgets").select("*").eq("user_id", current_user.id).execute()
+    data = supabase_client.table("budgets").select("*").eq("user_id", current_user.id).execute()
     
     return data.data
 
 @router.delete("/api/budgets/delete/{budget_id}")
-async def delete_budget(budget_id: str):
+async def delete_budget(budget_id: str, current_user: dict = Depends(get_current_user)):
     """
     Delete a budget by its ID.
 
@@ -68,10 +58,20 @@ async def delete_budget(budget_id: str):
     Returns:
         dict: A message indicating successful deletion.
     """
-    supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
-    
-    data = supabase.table("budgets").delete().eq("id", budget_id).execute()
-    if not data.data:
-        raise HTTPException(status_code=400, detail="Budget not found")
+    budget_data = supabase_client.table("budgets").select("*").eq("id", budget_id).execute()
 
-    return {"message": "Budget deleted successfully"}
+    if not budget_data.data:
+        raise HTTPException(status_code=404, detail="Budget not found")
+
+    user_data = supabase_client.table("budgets").select("*").eq("id", budget_id).eq("user_id", current_user.id).execute().data[0] if supabase_client.table("budgets").select("*").eq("id", budget_id).eq("user_id", current_user.id).execute().data else None
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not authorized to delete this budget")
+
+    delete_response = supabase_client.table("budgets").delete().eq("id", budget_id).execute()
+    
+    # Check if the delete was successful
+    if not delete_response.data:
+        raise HTTPException(status_code=delete_response.status_code, detail="Failed to delete the budget")
+
+    budget_name = data.data[0]["name"]
+    return {"message": f"Budget '{budget_name}' deleted successfully"}

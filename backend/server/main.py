@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
-from server.routes import expenses_router, goals_router, suggestions_router, budgets_router
+from server.routes import expenses_router, goals_router, suggestions_router, budgets_router, users_router
 from supabase import create_client
 import os
 import dotenv
@@ -8,6 +8,8 @@ from utils import ReceiptScanner
 dotenv.load_dotenv()
 
 app = FastAPI(swagger_ui_parameters={"withCredentials": True})
+
+supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
 app.include_router(expenses_router)
 app.include_router(goals_router)

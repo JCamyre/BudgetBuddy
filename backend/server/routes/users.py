@@ -1,34 +1,17 @@
 from fastapi import APIRouter, HTTPException, Depends, Response, Cookie, Request
 from typing import Optional
-from pydantic import BaseModel, EmailStr
-from supabase import create_client
 import os
 from datetime import datetime, timezone
 import jwt
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.security import APIKeyCookie
-
+from ..supabase_client import supabase_client
+from ..schemas import User, UserCreate, UserLogin
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 cookie_auth = APIKeyCookie(name="access_token", auto_error=False)
 
-class UserCreate(BaseModel):
-    email: EmailStr
-    password: str
-    full_name: str
-
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
-
-class User(BaseModel):
-    """Model representing a user."""
-
-    id: Optional[str] = None
-    email: EmailStr
-    full_name: str
-    created_at: Optional[datetime] = None
 
 @router.post("/api/users/register", response_model=User)
 async def register_user(user: UserCreate):
@@ -45,10 +28,9 @@ async def register_user(user: UserCreate):
         HTTPException: If registration fails due to existing email or other errors.
     """
 
-    supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     
     try:
-        auth_response = supabase.auth.sign_up({
+        auth_response = supabase_client.auth.sign_up({
             "email": user.email,
             "password": user.password
         })
@@ -60,7 +42,7 @@ async def register_user(user: UserCreate):
             "created_at": datetime.now(timezone.utc).isoformat()
         }
         
-        data = supabase.table("users").insert(user_data).execute()
+        data = supabase_client.table("users").insert(user_data).execute()
         
         return User(**user_data)
     except Exception as e:
@@ -82,19 +64,17 @@ async def login_user(user: UserLogin, response: Response):
         HTTPException: If the credentials are invalid or authentication fails.
     """
 
-    supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     
     try:
-        auth_response = supabase.auth.sign_in_with_password({
+        auth_response = supabase_client.auth.sign_in_with_password({
             "email": user.email,
             "password": user.password
         })
         response.set_cookie(
             key="access_token", 
             value=auth_response.session.access_token, 
-            httponly=True,  # Prevent JavaScript access
-            secure=True,    # Use HTTPS
-            samesite='Lax'  # Adjust according to your needs
+            httponly=True,  
+            samesite='Lax'  
         )
         return{
             "access_token": auth_response.session.access_token,
@@ -123,12 +103,11 @@ async def get_current_user(access_token: str = Cookie(default=None)):
     """
     
 
-    supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
     if access_token is None:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
     # Verify the token with Supabase
-    user = supabase.auth.get_user(access_token)
+    user = supabase_client.auth.get_user(access_token)
     if user is None:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     
