@@ -6,7 +6,7 @@ import json
 from dotenv import load_dotenv
 import os
 import together
-
+from ..schemas import Budget, BudgetQuestionnaire, GoalQuestionnaire
 load_dotenv()
 
 router = APIRouter()
@@ -14,26 +14,6 @@ router = APIRouter()
 together_client = together.Client()
 
 # Temp until Aryan's PR is merged
-class Budget(BaseModel):
-    id: Optional[str] = None
-    name: str
-    spending_limit: float
-    duration: Literal['weekly', 'monthly', 'yearly']
-    user_id: Optional[str] = None
-
-class BudgetQuestionnaire(BaseModel):
-    financial_situation: str  # Open-ended description of current financial situation
-    spending_habits: str  # Description of typical spending patterns
-    financial_goals: str  # Short and long term financial objectives
-    lifestyle_preferences: str  # Description of lifestyle and priorities
-    financial_concerns: str  # Any specific financial worries or challenges
-
-class GoalQuestionnaire(BaseModel):
-    current_situation: str  # Description of current financial position
-    future_aspirations: str  # Long-term life and financial aspirations
-    risk_comfort: str  # Description of comfort level with financial risk
-    timeline_description: str  # When they want to achieve their goals
-    constraints: str  # Any limitations or obligations affecting their goals
 
 async def get_llm_response(messages):
     """Get response from DeepSeek model via Together."""
