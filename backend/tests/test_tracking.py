@@ -6,6 +6,7 @@ import json
 from unittest.mock import patch
 import os
 import sys
+import judgeval
 
 client = TestClient(app)
 
