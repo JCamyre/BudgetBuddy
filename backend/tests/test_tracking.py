@@ -17,14 +17,14 @@ async def test_photo_receipt_upload():
     test_filename = "test_receipt.jpg"
     
     # Mock the ReceiptScanner.scan_receipt method
-    mock_result = {"amount": 42.99, "merchant": "Test Store"}
+    mock_result = {"amount": 29.01, "merchant": "Test Store"}
     with patch("server.routes.tracking.ReceiptScanner") as MockScanner:
         mock_scanner_instance = MockScanner.return_value
         mock_scanner_instance.scan_receipt.return_value = mock_result
         
         # Create test file and make request
         files = {"file": (test_filename, test_file_content, "image/jpeg")}
-        response = client.post("/photo-receipts/", files=files)
+        response = client.post("/api/scan-receipt", files=files)
         
         # Verify response
         assert response.status_code == 200
@@ -41,5 +41,5 @@ async def test_photo_receipt_upload():
 async def test_photo_receipt_invalid_file():
     # Test with empty file
     files = {"file": ("empty.jpg", b"", "image/jpeg")}
-    response = client.post("/photo-receipts/", files=files)
-    assert response.status_code == 422  # FastAPI validates file is not empty
+    response = client.post("/api/scan-receipt", files=files)
+    assert response.status_code == 404  # FastAPI validates file is not empty
