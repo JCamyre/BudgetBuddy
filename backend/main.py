@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from server.routes import expenses_router, goals_router, suggestions_router, budgets_router, users_router
+from server.routes import expenses_router, goals_router, suggestions_router, budgets_router, users_router, tracking_router
 from supabase import create_client
 import os
 import dotenv
@@ -24,6 +24,7 @@ app.add_middleware(
 # Include routers
 app.include_router(expenses_router)
 app.include_router(goals_router)
+app.include_router(tracking_router)
 app.include_router(users_router)
 app.include_router(suggestions_router)
 app.include_router(budgets_router)
