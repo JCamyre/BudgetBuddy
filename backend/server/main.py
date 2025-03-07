@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
-from server.routes import expenses_router, goals_router
+from fastapi.middleware.cors import CORSMiddleware
+from .routes import expenses_router, goals_router  # Import goals_router
 from supabase import create_client
 import os
 import dotenv
@@ -9,8 +10,18 @@ dotenv.load_dotenv()
 
 app = FastAPI()
 
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3001"],
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],
+)
+
+# Include routers
 app.include_router(expenses_router)
-app.include_router(goals_router)
+app.include_router(goals_router)  # Include goals_router
 
 @app.get("/")
 async def root():
