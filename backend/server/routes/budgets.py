@@ -3,8 +3,8 @@ import os
 from .users import get_current_user  # Assuming you have a way to get the current user
 from typing import Optional, Literal
 from pydantic import BaseModel
-from ..supabase_client import supabase_client
-from ..schemas import Budget
+from utils.supabase_client import supabase_client
+from server.schemas import Budget
 router = APIRouter()
 
 
@@ -73,5 +73,5 @@ async def delete_budget(budget_id: str, current_user: dict = Depends(get_current
     if not delete_response.data:
         raise HTTPException(status_code=delete_response.status_code, detail="Failed to delete the budget")
 
-    budget_name = data.data[0]["name"]
+    budget_name = delete_response.data[0]["name"]
     return {"message": f"Budget '{budget_name}' deleted successfully"}
