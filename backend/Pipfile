@@ -17,6 +17,8 @@ donut = "*"
 donut-python = "*"
 timm = "==0.5.4"
 judgeval = "*"
+jwt = "*"
+pydantic = {extras = ["email"], version = "*"}
 
 [dev-packages]
 
