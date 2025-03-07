@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
-from server.routes import expenses_router, goals_router, suggestions_router, budgets_router, users_router
+from fastapi.middleware.cors import CORSMiddleware
+from server.routes import expenses_router, goals_router, suggestions_router, budgets_router, users_router, tracking_router
 from supabase import create_client
 import os
 import dotenv
@@ -11,8 +12,19 @@ app = FastAPI(swagger_ui_parameters={"withCredentials": True})
 
 supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3001"],
+    allow_credentials=True,
+    allow_methods=["*"], 
+    allow_headers=["*"],
+)
+
+# Include routers
 app.include_router(expenses_router)
 app.include_router(goals_router)
+app.include_router(tracking_router)
 app.include_router(users_router)
 app.include_router(suggestions_router)
 app.include_router(budgets_router)
