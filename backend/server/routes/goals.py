@@ -18,8 +18,8 @@ class Goal(BaseModel):
     id: int
     target_amount: float
     current_amount: float
-    title: str
-    description: str
+    actionable_amount: float
+    frequency: str
     deadline: datetime
     user_id: int
 
