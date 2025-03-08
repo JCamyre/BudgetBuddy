@@ -23,7 +23,7 @@ class Expense(BaseModel):
     user_id: int
 
 
-@router.post("api/expenses/create", response_model=bool)
+@router.post("/api/expenses/create", response_model=bool)
 async def create_expense(body: dict):
     """
     Add a new expense to the database of expenses. Returns a boolean indicating whether or not the action
@@ -64,7 +64,7 @@ async def create_expense(body: dict):
         return False
 
 
-@router.post("api/expenses/view", response_model=List[Expense])
+@router.post("/api/expenses/view", response_model=List[Expense])
 async def get_expenses(body: dict):
     """
     Retrive the expenses in the database for the current user.
@@ -89,7 +89,7 @@ async def get_expenses(body: dict):
         return []
 
 
-@router.put("api/expenses/delete", response_model=Expense)
+@router.post("/api/expenses/delete", response_model=bool)
 async def delete_expense(body: dict):
     """
     Deletes the selected expense from the database. Returns a boolean indicating whether or not the
