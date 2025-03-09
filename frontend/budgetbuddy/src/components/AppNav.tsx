@@ -1,3 +1,4 @@
+// components/AppNav.tsx
 "use client";
 
 import Link from 'next/link';
@@ -53,7 +54,8 @@ const AppNav = () => {
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0">
+            {/* Update the logo link to redirect to /dashboard when logged in */}
+            <Link href={isLoggedIn ? "/dashboard" : "/"} className="flex-shrink-0">
               <Image
                 src={logo as StaticImageData}
                 alt="logo"
