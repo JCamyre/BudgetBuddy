@@ -66,21 +66,21 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-lg shadow-md border border-green-100 hover:shadow-lg transition-shadow duration-300">
               <p className="text-base text-green-700 italic">
-                "BudgetBuddy has completely changed the way I manage my finances. It’s so easy to use!"
+                &quot;BudgetBuddy has completely changed the way I manage my finances. It&apos;s so easy to use!&quot;
               </p>
               <p className="text-green-900 font-semibold mt-4">- Jane Doe</p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md border border-green-100 hover:shadow-lg transition-shadow duration-300">
               <p className="text-base text-green-700 italic">
-                "The AI insights are incredibly helpful. I’ve saved so much money since I started using BudgetBuddy."
+                &quot;The AI insights are incredibly helpful. I&apos;ve saved so much money since I started using BudgetBuddy.&quot;
               </p>
               <p className="text-green-900 font-semibold mt-4">- John Smith</p>
             </div>
 
             <div className="bg-white p-6 rounded-lg shadow-md border border-green-100 hover:shadow-lg transition-shadow duration-300">
               <p className="text-base text-green-700 italic">
-                "I love how I can track my expenses and set financial goals all in one place."
+                &quot;I love how I can track my expenses and set financial goals all in one place.&quot;
               </p>
               <p className="text-green-900 font-semibold mt-4">- Sarah Johnson</p>
             </div>
