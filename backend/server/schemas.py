@@ -27,6 +27,26 @@ class User(BaseModel):
     full_name: str
     created_at: Optional[datetime] = None
 
+class GoalCreate(BaseModel):
+    title: str
+    target_amount: float
+    current_amount: float
+    actionable_amount: float
+    frequency: str
+    deadline: datetime
+
+class GoalResponse(GoalCreate):
+    id: Optional[str] = None
+    user_id: Optional[str] = None
+
+class GoalUpdate(BaseModel):
+    title: str
+    target_amount: float
+    current_amount: float
+    actionable_amount: float
+    frequency: str
+    deadline: str
+
 class BudgetQuestionnaire(BaseModel):
     financial_situation: str  # Open-ended description of current financial situation
     spending_habits: str  # Description of typical spending patterns

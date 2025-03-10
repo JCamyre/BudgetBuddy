@@ -9,14 +9,34 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (email === 'test@example.com' && password === 'password') {
-      router.push('/');
-    } else {
-      setError('Invalid email or password');
+  
+    try {
+      const response = await fetch("http://localhost:8000/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",  // Include cookies in the request
+        body: JSON.stringify({ email, password }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.detail || "Login failed");
+        return;
+      }
+  
+      // Log the response for debugging
+      const data = await response.json();
+      console.log("Login successful:", data);
+  
+      // Redirect to the dashboard after successful login
+      router.push("/dashboard");  // Ensure this line is executed
+    } catch (error) {
+      console.error("Login failed:", error);
+      setError("An error occurred during login.");
     }
   };
 
@@ -34,7 +54,7 @@ export default function Login() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
@@ -47,7 +67,7 @@ export default function Login() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
