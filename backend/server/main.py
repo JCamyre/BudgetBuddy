@@ -15,6 +15,7 @@ supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_K
 # CORS middleware
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=["http://localhost:3001"],
      allow_origins=[
         "http://localhost:3000",
     ],
