@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from backend.server.routes import expenses_router, goals_router, suggestions_router, budgets_router, users_router, tracking_router
+from server.routes import expenses_router, goals_router, suggestions_router, budgets_router, users_router, tracking_router
 from supabase import create_client
 import os
 import dotenv

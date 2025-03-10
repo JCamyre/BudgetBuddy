@@ -29,7 +29,6 @@ async def create_goal(body: dict, current_user: dict = Depends(get_current_user)
     }
     """
     try:
-        print("Got here")
         user_id = current_user.id
 
         # Validate input data
