@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 
 interface Goal {
   id: string;
-  goal_name: string;
+  goal_name: number | string;
   target_amount: number;
   current_progress: number;
   actionable_amount: number;
@@ -47,43 +47,52 @@ const Goals = () => {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const getSessionId = () => {
-    return document.cookie
-      .split('; ')
-      .find(row => row.startsWith('session_id='))
-      ?.split('=')[1];
-  };
-
   const checkAuth = async () => {
     try {
+      console.log("Fetching session validation...");
       const response = await fetch('http://localhost:8000/api/validate-session', {
-        credentials: 'include'
+        method: 'GET',
+        credentials: 'include',
       });
-      return response.ok ? (await response.json()).valid : false;
+  
+      console.log("Response status:", response.status);
+  
+      if (!response.ok) {
+        console.error("Session validation failed - Response not OK");
+        return false;
+      }
+  
+      const data = await response.json();
+      console.log("Session validation result:", data);
+  
+      return data.valid;
     } catch (error) {
       console.error('Session validation failed:', error);
       return false;
     }
   };
-
+  
+  
   useEffect(() => {
     const fetchData = async () => {
-      if (!await checkAuth()) return;
-      
+      console.log("Checking auth...");
+      if (!await checkAuth()) {
+        console.log("User not authenticated");
+        return;
+      }
+  
       try {
-        const session_id = getSessionId();
-        if (!session_id) return;
-
+        console.log("Fetching goals...");
         const response = await fetch(`http://localhost:8000/api/goals/view`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ session_id }),
+          method: "GET",
           credentials: "include"
         });
-
+  
         if (!response.ok) throw new Error("Failed to fetch goals");
         
         const data = await response.json();
+        console.log("Goals fetched:", data);
+  
         const transformedData = data.map((goal: any) => ({
           id: goal.id.toString(),
           goal_name: goal.title,
@@ -93,30 +102,34 @@ const Goals = () => {
           frequency: goal.frequency,
           target_date: new Date(goal.deadline).toISOString().split('T')[0]
         }));
-        
+  
         setGoals(transformedData);
+        console.log("Goals state updated:", transformedData);
       } catch (error) {
         console.error("Error fetching goals:", error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, []);
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!await checkAuth()) return;
-    const session_id = getSessionId();
-    if (!session_id) return;
-
+    console.log("Form submitted");
+    if (!await checkAuth()) {
+      console.error("Not authenticated");
+      return;
+    }
+  
     try {
+      console.log("Sending create goal request");
       const response = await fetch("http://localhost:8000/api/goals/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          session_id,
           new_goal: {
             title: newGoal.goal_name,
             target_amount: Number(newGoal.target_amount),
@@ -127,13 +140,14 @@ const Goals = () => {
           }
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to create goal");
       }
-
+  
       const createdGoal = await response.json();
+      console.log("Goal created:", createdGoal);
       setGoals(prev => [...prev, {
         id: createdGoal.id.toString(),
         goal_name: createdGoal.title,
@@ -143,7 +157,7 @@ const Goals = () => {
         frequency: createdGoal.frequency,
         target_date: new Date(createdGoal.deadline).toISOString().split('T')[0]
       }]);
-
+  
       setShowCreateForm(false);
       setNewGoal({
         goal_name: "",
@@ -158,51 +172,51 @@ const Goals = () => {
       alert(error instanceof Error ? error.message : "Failed to create goal");
     }
   };
-
+  
   const handleEdit = (goal: Goal) => {
     setEditingGoal({
       ...goal,
       target_date: goal.target_date || "",
     });
   };
-
+  
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingGoal || !await checkAuth()) return;
-    const session_id = getSessionId();
-    if (!session_id) return;
-
+  
     try {
-      const response = await fetch(`http://localhost:8000/api/goals/update`, {
-        method: "POST",
+      const response = await fetch(`http://localhost:8000/api/goals/update/${editingGoal.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
-          session_id,
-          goal_id: parseInt(editingGoal.id),
-          updated_goal: {
-            current_amount: Number(editingGoal.current_progress),
-            title: editingGoal.goal_name.trim(),
-            target_amount: editingGoal.target_amount,
-            actionable_amount: editingGoal.actionable_amount,
-            frequency: editingGoal.frequency,
-            deadline: new Date(editingGoal.target_date).toISOString()
-          }
+          title: String(editingGoal.goal_name).trim(),
+          target_amount: editingGoal.target_amount,
+          current_amount: editingGoal.current_progress,
+          actionable_amount: editingGoal.actionable_amount,
+          frequency: editingGoal.frequency,
+          deadline: new Date(editingGoal.target_date).toISOString()
         }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to update goal");
       }
-
+  
       const updatedGoal = await response.json();
       setGoals(goals.map(goal => 
         goal.id === updatedGoal.id.toString() ? {
           ...updatedGoal,
           id: updatedGoal.id.toString(),
           goal_name: updatedGoal.title,
-          target_date: new Date(updatedGoal.deadline).toISOString().split('T')[0]
-        } : goal
+          target_amount: updatedGoal.target_amount,
+          current_progress: updatedGoal.current_amount,
+          actionable_amount: updatedGoal.actionable_amount,
+          frequency: updatedGoal.frequency,
+          target_date: new Date(updatedGoal.deadline).toISOString().split("T")[0],
+        }
+      : goal
       ));
       setEditingGoal(null);
     } catch (error) {
@@ -210,44 +224,39 @@ const Goals = () => {
       alert(error instanceof Error ? error.message : "Failed to update goal");
     }
   };
-
+  
+  
   const handleDelete = async (goalId: string) => {
     if (!await checkAuth()) return;
-    const session_id = getSessionId();
-    if (!session_id) return;
-
+  
     try {
-      const response = await fetch(`http://localhost:8000/api/goals/delete`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          session_id,
-          goal_id: parseInt(goalId)
-        }),
+      const response = await fetch(`http://localhost:8000/api/goals/delete/${goalId}`, {
+        method: "DELETE",
+        credentials: "include"
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to delete goal");
       }
-
+  
       setGoals(goals.filter(goal => goal.id !== goalId));
     } catch (error) {
       console.error("Error deleting goal:", error);
       alert(error instanceof Error ? error.message : "Failed to delete goal");
     }
   };
-
+  
   if (loading) {
     return <div className="text-center py-10 text-lg font-semibold text-gray-300">Loading...</div>;
   }
-
+  
   const { shortTerm, longTerm } = categorizeGoals(goals);
-
+  
   return (
     <div className="p-8 bg-white min-h-screen text-green-900">
       <h1 className="text-4xl font-bold mb-8">Financial Goals</h1>
-
+  
       <button
         onClick={() => {
           setShowCreateForm(!showCreateForm);
@@ -264,7 +273,7 @@ const Goals = () => {
       >
         {showCreateForm ? "Hide Form" : "Create a New Goal"}
       </button>
-
+  
       {showCreateForm && (
         <form onSubmit={handleSubmit} className="mb-8 p-6 bg-green-50 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold mb-4">Create a New Goal</h2>
@@ -285,7 +294,7 @@ const Goals = () => {
               onChange={(e) => setNewGoal({ ...newGoal, target_amount: Number(e.target.value) })}
               required
             />
-
+  
             <div className="col-span-2 flex items-center gap-2">
               <span className="text-green-900 font-semibold">Save $</span>
               <input
@@ -306,7 +315,7 @@ const Goals = () => {
                 <option value="year">Year</option>
               </select>
             </div>
-
+  
             <input
               type="date"
               className="p-2 border border-green-300 rounded bg-white text-green-900 focus:outline-none focus:border-green-500"
@@ -315,7 +324,7 @@ const Goals = () => {
               required
             />
           </div>
-
+  
           <button
             type="submit"
             className="mt-4 px-4 py-2 bg-green-700 text-white rounded hover:bg-green-600 transition-colors"
@@ -324,7 +333,7 @@ const Goals = () => {
           </button>
         </form>
       )}
-
+  
       {editingGoal && (
         <form onSubmit={handleUpdate} className="mb-8 p-6 bg-blue-50 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold mb-4">Edit Goal</h2>
@@ -361,14 +370,14 @@ const Goals = () => {
           </button>
         </form>
       )}
-
+  
       <h2 className="text-3xl font-semibold mt-8 mb-4">Short-Term Goals</h2>
       {shortTerm.length === 0 ? (
         <p className="text-green-700">No short-term goals yet.</p>
       ) : (
         <GoalTable goals={shortTerm} onEdit={handleEdit} onDelete={handleDelete} />
       )}
-
+  
       <h2 className="text-3xl font-semibold mt-8 mb-4">Long-Term Goals</h2>
       {longTerm.length === 0 ? (
         <p className="text-green-700">No long-term goals yet.</p>
@@ -378,7 +387,7 @@ const Goals = () => {
     </div>
   );
 };
-
+  
 const GoalTable = ({
   goals,
   onEdit,
@@ -445,5 +454,5 @@ const GoalTable = ({
     </table>
   </div>
 );
-
+  
 export default Goals;
