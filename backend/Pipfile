@@ -3,9 +3,13 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/cpu"
+verify_ssl = true
+name = "downloadpytorch"
+
 [packages]
 transformers = "==4.25.1"
-torch = "*"
 pillow = "*"
 uvicorn = "*"
 fastapi = "*"
@@ -17,6 +21,11 @@ donut = "*"
 donut-python = "*"
 timm = "==0.5.4"
 judgeval = "*"
+jwt="*"
+pydantic = {extras = ["email"], version = "*"}
+torch = {version = "*", index = "downloadpytorch"}
+torchvision = {version = "*", index = "downloadpytorch"}
+torchaudio = {version = "*", index = "downloadpytorch"}
 
 [dev-packages]
 

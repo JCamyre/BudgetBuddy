@@ -80,7 +80,7 @@ export default function Login() {
           </button>
         </form>
         <div className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-green-700 hover:text-green-600 font-medium">
             Sign Up
           </Link>
