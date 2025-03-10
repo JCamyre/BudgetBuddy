@@ -34,6 +34,11 @@ async def create_photo_receipt(file: UploadFile = File(...)):
                     - Food\
                     - Entertainment\
                     - Shopping\
+                    - Travel\
+                    - Pets\
+                    - Medical\
+                    - Rent\
+                    - Transportation\
                     - Other\
                     ***IMPORTANT FORMATTING INSTRUCTIONS***\
                     - Only respond with the category name, no other text\
