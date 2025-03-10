@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
-from supabase import create_client
+from ..supabase_client import supabase_client
 import os
 from ..routes.users import get_current_user
 
@@ -12,18 +12,13 @@ class Expense(BaseModel):
     id: Optional[int] = None
     amount: float
     category: str
-    # description: str
+    business_name: str
     date: datetime
     user_id: int
 
 @router.get("/api/expenses/", response_model=List[Expense])
 async def get_expenses(current_user: dict = Depends(get_current_user)):
-    supabase = create_client(
-        url=os.getenv("SUPABASE_URL"),
-        key=os.getenv("SUPABASE_KEY")
-    )
-    
-    result = supabase.table("expenses").select("*").filter("user_id", "eq", current_user.id).execute()
+    result = supabase_client.table("expenses").select("*").eq("user_id", current_user.id).execute()
 
     return result.data
 
