@@ -12,6 +12,17 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 cookie_auth = APIKeyCookie(name="access_token", auto_error=False)
 
+# users.py - Simplified validation endpoint
+@router.get("/api/validate-session")
+async def validate_session(access_token: Optional[str] = Cookie(default=None)):
+    if not access_token:
+        return {"valid": False}
+    
+    try:
+        user = supabase_client.auth.get_user(access_token)
+        return {"valid": True, "user": user.user}
+    except:
+        return {"valid": False}
 
 @router.post("/api/users/register", response_model=User)
 async def register_user(user: UserCreate):
@@ -117,3 +128,15 @@ async def get_current_user(access_token: str = Cookie(default=None), testing: bo
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     
     return user.user
+
+# users.py
+@router.post("/api/users/logout")
+async def logout_user(response: Response):
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        samesite="Lax",
+        domain="localhost",
+        path="/"
+    )
+    return {"message": "Logout successful"}

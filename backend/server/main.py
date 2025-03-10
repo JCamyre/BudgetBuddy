@@ -16,6 +16,9 @@ supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_K
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3001"],
+     allow_origins=[
+        "http://localhost:3000",
+    ],
     allow_credentials=True,
     allow_methods=["*"], 
     allow_headers=["*"],
@@ -28,6 +31,7 @@ app.include_router(tracking_router)
 app.include_router(users_router)
 app.include_router(suggestions_router)
 app.include_router(budgets_router)
+app.include_router(users_router)
 
 @app.get("/health")
 async def health():
