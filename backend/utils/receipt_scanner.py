@@ -20,7 +20,10 @@ class ReceiptScanner:
 
     def scan_receipt(self, image_path):
         # Load and process the image
-        image = Image.open(image_path)
+        try:
+            image = Image.open(image_path)
+        except Exception as e:
+            raise FileNotFoundError(detail=str(e))
         
         # Generate receipt information
         output = self.model.inference(

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Geist, Geist_Mono, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import AppNav from "@/components/AppNav";
 
@@ -15,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 const beVietnamPro = Be_Vietnam_Pro({
-  variable: "--font-be-vietnam-pro", 
-  weight: "700",
+  variable: "--font-be-vietnam-pro",
   subsets: ["latin"],
+  weight: "500",
 });
 
 export const metadata: Metadata = {
