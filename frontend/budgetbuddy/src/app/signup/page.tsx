@@ -13,18 +13,46 @@ export default function Signup() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-
-    if (email && password.length >= 6) {
+  
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+  
+    try {
+      const response = await fetch("http://localhost:8000/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, full_name: "Test User" }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        
+        // Check if detail is an object or string
+        const errorMessage = typeof errorData.detail === "string"
+          ? errorData.detail
+          : JSON.stringify(errorData.detail, null, 2);
+  
+        setError(errorMessage); // Show user-friendly error
+        return;
+      }
+  
+      const data = await response.json();
+      console.log("Registration successful:", data);
       router.push("/login");
-    } else {
-      setError("Invalid email or password (must be at least 6 characters)");
+  
+    } catch (error) {
+      console.error("Registration failed:", error);
+      setError("An error occurred during registration. Please try again.");
     }
   };
+  
 
   return (
     <div className="bg-white min-h-screen flex items-center justify-center">
@@ -40,7 +68,7 @@ export default function Signup() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
@@ -53,7 +81,7 @@ export default function Signup() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
@@ -66,7 +94,7 @@ export default function Signup() {
               id="confirmPassword"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-black focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
               required
             />
           </div>
