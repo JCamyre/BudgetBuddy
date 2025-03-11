@@ -4,8 +4,9 @@ from pydantic import BaseModel
 import pydantic_core
 from postgrest.exceptions import APIError
 from datetime import datetime
-# from ..supabase_client import supabase_client
+from utils.supabase_client import supabase_client
 from .users import get_current_user
+from uuid import UUID
 
 import os
 from supabase import create_client as open_sb, PostgrestAPIResponse as APIResponse
@@ -16,10 +17,10 @@ import utils.auth as bb_auth
 
 router = APIRouter()
 
-supabase_client = open_sb(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+
 
 class Expense(BaseModel):
-    id: int
+    id: UUID
     amount: float
     category: str
     business_name: str
@@ -158,29 +159,29 @@ async def create_expense(body: dict):
         return False
 
 
-# @router.post("/api/expenses/view", response_model=List[Expense])
-# async def get_expenses(body: dict):
-#     """
-#     Retrive the expenses in the database for the current user.
+@router.post("/api/expenses/view", response_model=List[Expense])
+async def get_expenses(body: dict):
+    """
+    Retrive the expenses in the database for the current user.
 
-#     Example request body:
+    Example request body:
 
-#         {
-#             "session_id": 12345678
-#         }
+        {
+            "session_id": 12345678
+        }
 
-#     Note: This method requires a session id. If the session id is invalid, the command will fail.
-#     """
-#     session_id: int = body["session_id"]
-#     user_id = bb_auth.get_user_from_session(session_id)
-#     if user_id == -1:
-#         raise HTTPException(status_code=403, detail="Invalid session ID")
-#     supabase = open_sb(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
-#     try:
-#         result = supabase.table("expenses").select("*").eq("user_id", user_id).execute()
-#         return [Expense.model_validate_json(json.dumps(obj)) for obj in result.data]
-#     except APIError as err:
-#         return []
+    Note: This method requires a session id. If the session id is invalid, the command will fail.
+    """
+    session_id: int = body["session_id"]
+    user_id = bb_auth.get_user_from_session(session_id)
+    if user_id == -1:
+        raise HTTPException(status_code=403, detail="Invalid session ID")
+    supabase = open_sb(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+    try:
+        result = supabase.table("expenses").select("*").eq("user_id", user_id).execute()
+        return [Expense.model_validate_json(json.dumps(obj)) for obj in result.data]
+    except APIError as err:
+        return []
 
 
 @router.post("/api/expenses/delete", response_model=bool)
