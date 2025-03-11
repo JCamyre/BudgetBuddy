@@ -4,10 +4,6 @@ import React from 'react'
 const Insights = () => {
   const [collapse1, setCollapse1] = React.useState(true)
   const [collapse2, setCollapse2] = React.useState(true)
-  const [collapse3, setCollapse3] = React.useState(true)
-
-  const [which1, setWhich1] = React.useState(0)
-  const [which2, setWhich2] = React.useState(0)
   
   return (
     <div className = "min-h-screen">

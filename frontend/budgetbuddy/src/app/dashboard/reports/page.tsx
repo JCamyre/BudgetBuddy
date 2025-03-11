@@ -28,7 +28,7 @@ const generateTestData = () => {
 };
 
 const Reports = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
     // Simulate fetching test data

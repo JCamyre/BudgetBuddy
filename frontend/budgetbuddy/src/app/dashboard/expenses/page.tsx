@@ -80,7 +80,7 @@ export default function ExpensesPage() {
         console.log("Expenses fetched:", data);
     
         // Normalize and ensure properties are never null or undefined
-        const mappedData = data.map((item) => ({
+        const mappedData = data.map((item: any) => ({
           id: item.id,
           amount: item.amount || "0", // Default to "0" if missing
           business: item.business ?? "", // Ensure business is always a string
@@ -274,7 +274,7 @@ export default function ExpensesPage() {
                     <span className="font-bold">{transaction.amount}</span> -{" "}
                     <span className="italic"> {transaction.business} </span>
                     <span
-                      className={`ml-2 font-semibold ${categoryColors[transaction.category]}`}
+                      className={`ml-2 font-semibold ${categoryColors[transaction.category as keyof typeof categoryColors]}`}
                     >
                       {transaction.category}
                     </span>
