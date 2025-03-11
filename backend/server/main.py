@@ -12,7 +12,7 @@ app = FastAPI(swagger_ui_parameters={"withCredentials": True})
 
 supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
-# CORS middleware
+
 app.add_middleware(
     CORSMiddleware,
      allow_origins=[
@@ -20,10 +20,11 @@ app.add_middleware(
         "https://budget-buddy-eight-phi.vercel.app",
         "https://budgetbuddy-688497269708.us-west2.run.app"
     ],
-    allow_credentials=True,
-    allow_methods=["*"], 
-    allow_headers=["*"],
+    allow_credentials=True,  # Allow cookies/session authentication
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 )
+
 
 # Include routers
 app.include_router(expenses_router)
@@ -32,7 +33,6 @@ app.include_router(tracking_router)
 app.include_router(users_router)
 app.include_router(suggestions_router)
 app.include_router(budgets_router)
-app.include_router(users_router)
 
 @app.get("/health")
 async def health():
