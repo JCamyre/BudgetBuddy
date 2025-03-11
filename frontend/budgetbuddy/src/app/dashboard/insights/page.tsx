@@ -227,9 +227,9 @@ const Insights = () => {
                   <div className="mt-8 p-4 bg-white border border-green-300 rounded shadow-sm">
                     <h4 className="text-lg font-semibold text-green-900 mb-3">Your Suggested Budget</h4>
                     <div className="flex flex-col space-y-2">
-                      <p className="text-md"><span className="font-medium">Budget Name:</span> {budgetSuggestion.name}</p>
-                      <p className="text-md"><span className="font-medium">Spending Limit:</span> ${budgetSuggestion.spending_limit.toFixed(2)}</p>
-                      <p className="text-md"><span className="font-medium">Duration:</span> {budgetSuggestion.duration}</p>
+                      <p className="text-md"><span className="font-medium">Budget Name:</span> {budgetSuggestion[0]}</p>
+                      <p className="text-md"><span className="font-medium">Spending Limit:</span> ${budgetSuggestion[1]}</p>
+                      <p className="text-md"><span className="font-medium">Duration:</span> {budgetSuggestion[2]}</p>
                     </div>
                     <button 
                       className="mt-4 bg-green-600 hover:bg-green-500 text-white font-bold py-1 px-4 rounded"
@@ -264,11 +264,11 @@ const Insights = () => {
                 <ul>
                     <li> Travel: You spend 20% of your annual budget on travel, prioritizing international vacations and weekend getaways.</li>
                     <li> Dining & Experiences: You allocate 15% to dining out, exploring trendy restaurants, and attending events like concerts and art shows.</li>
-                    <li> Health & Fitness: You invest 10% of your budget in a premium gym membership, wellness retreats, and organic groceries, which is higher than the average person's expenditure in this category.</li>
+                    <li> Health & Fitness: You invest 10% of your budget in a premium gym membership, wellness retreats, and organic groceries, which is higher than the average person&apos;s expenditure in this category.</li>
                 </ul>
               </div>
               <div className = "text-sm mt-4">
-              By using Budget Buddy, you can track these spending habits and ensure you're balancing your lifestyle choices with your long-term savings and investment goals.
+              By using Budget Buddy, you can track these spending habits and ensure you&apos;re balancing your lifestyle choices with your long-term savings and investment goals.
               </div>
 
               {/* Goal Questionnaire Form */}
