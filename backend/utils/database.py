@@ -1,6 +1,6 @@
 from utils.supabase_client import supabase_client
 
-async def save_receipt_result(result, user_id, category):
+async def save_receipt_result(result, user_id, category: str, price: str):
     """
     Save the receipt scanning result to the Supabase database in the expenses table.
     
@@ -14,12 +14,15 @@ async def save_receipt_result(result, user_id, category):
     try:
         # Format the receipt data to match the expenses table structure
         print(f"{result=}")
+        
         expense_data = {
             "user_id": user_id,
-            "amount": result.get("total_amount"),
-            "category": category,
+            "amount": float(price.split("</think>")[1]),
+            "category": category.split("</think>")[1],
             # date will use the default CURRENT_TIMESTAMP if not provided
         }
+        
+        print(f"{expense_data=}")
         
         # Insert the data into the 'expenses' table
         response = supabase_client.table("expenses").insert(expense_data).execute()
