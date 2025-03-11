@@ -110,7 +110,7 @@ export default function ExpensesPage() {
                   <div>
                     <span className="font-bold">{transaction.amount}</span> -
                     <span className="italic"> {transaction.business} </span>
-                    <span className={`ml-2 font-semibold ${categoryColors[transaction.category]}`}>
+                    <span className={`ml-2 font-semibold ${categoryColors[transaction.category as keyof typeof categoryColors]}`}>
                       {transaction.category}
                     </span>
                   </div>
