@@ -190,10 +190,19 @@ export default function ExpensesPage() {
 
   const saveEdit = async () => {
     if (editingIndex === null) return;
-
+  
     const expenseId = transactions[editingIndex].id;
     if (!expenseId) return;
-
+  
+    const updatedExpense = {
+      id: String(expenseId),  // ✅ Convert UUID to string
+      amount: Number(editData.amount),
+      category: editData.category,
+      business_name: editData.business,
+    };
+  
+    console.log("Sending update payload:", updatedExpense);
+  
     try {
       const response = await fetch(
         `http://localhost:8000/api/expenses/update/${expenseId}`,
@@ -201,24 +210,25 @@ export default function ExpensesPage() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify(editData),
+          body: JSON.stringify(updatedExpense),
         }
       );
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to update expense");
       }
-
-      const updatedExpense = await response.json();
+  
+      const updatedExpenseData = await response.json();
       const updatedTransactions = [...transactions];
-      updatedTransactions[editingIndex] = updatedExpense;
+      updatedTransactions[editingIndex] = updatedExpenseData;
       setTransactions(updatedTransactions);
       setEditingIndex(null);
     } catch (error) {
       console.error("Error updating expense:", error);
     }
   };
+  
 
   const deleteExpense = async (expenseId: string) => {
     try {
