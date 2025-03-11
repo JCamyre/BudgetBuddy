@@ -64,10 +64,17 @@ async def create_photo_receipt(file: UploadFile = File(...)):
         )
         price = response.choices[0].message.content
         
-        # Save the result to the database
-        await save_receipt_result(result, user_id, category, price)
+        response = together_client.chat.completions.create(
+            model="deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+            messages=[
+                {"role": "system", "content": "You are an expert in extracting restaurant names from receipts. Specifically, the restaurant name. IMPORTANT: ONLY RESPOND WITH THE RESTAURANT NAME, NO OTHER TEXT. Do not include '$' in your response."},
+                {"role": "user", "content": f"Here is the receipt: {result_str}"}
+            ]
+        )
+        restaurant_name = response.choices[0].message.content
         
-        return True
+        # Save the result to the database
+        return await save_receipt_result(result, user_id, category, price, restaurant_name)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
