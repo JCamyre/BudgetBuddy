@@ -303,7 +303,7 @@ export default function ExpensesPage() {
       {/* Right Column - Budget Overview & File Upload */}
       <div className="w-1/3 flex flex-col gap-6">
         {/* Budget Overview */}
-        <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-full text-center">
+        {/* <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-full text-center">
           <h2 className="text-lg font-semibold text-gray-700">Budget Overview</h2>
           <div className="relative w-40 h-40 mx-auto mt-4">
             <svg className="w-full h-full" viewBox="0 0 36 36">
@@ -342,7 +342,7 @@ export default function ExpensesPage() {
               <span className="w-3 h-3 bg-purple-600 rounded-full"></span> Utility
             </p>
           </div>
-        </div>
+        </div> */}
 
         {/* File Upload Section */}
         <div className="sticky top-20 bg-green-900 p-6 rounded-lg shadow-md text-white w-full max-w-full">
