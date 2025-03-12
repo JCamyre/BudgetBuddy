@@ -50,7 +50,7 @@ const Goals = () => {
   const checkAuth = async () => {
     try {
       console.log("Fetching session validation...");
-      const response = await fetch('http://localhost:8000/api/validate-session', {
+      const response = await fetch('https://budgetbuddy-688497269708.us-west2.run.app/api/validate-session', {
         method: 'GET',
         credentials: 'include',
       });
@@ -83,7 +83,7 @@ const Goals = () => {
   
       try {
         console.log("Fetching goals...");
-        const response = await fetch(`http://localhost:8000/api/goals/view`, {
+        const response = await fetch(`https://budgetbuddy-688497269708.us-west2.run.app/api/goals/view`, {
           method: "GET",
           credentials: "include"
         });
@@ -136,7 +136,7 @@ const Goals = () => {
         parseInt(day)
       ));
   
-      const response = await fetch("http://localhost:8000/api/goals/create", {
+      const response = await fetch("https://budgetbuddy-688497269708.us-west2.run.app/api/goals/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -198,7 +198,7 @@ const Goals = () => {
     if (!editingGoal || !await checkAuth()) return;
   
     try {
-      const response = await fetch(`http://localhost:8000/api/goals/update/${editingGoal.id}`, {
+      const response = await fetch(`https://budgetbuddy-688497269708.us-west2.run.app/api/goals/update/${editingGoal.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -243,7 +243,7 @@ const Goals = () => {
     if (!await checkAuth()) return;
   
     try {
-      const response = await fetch(`http://localhost:8000/api/goals/delete/${goalId}`, {
+      const response = await fetch(`https://budgetbuddy-688497269708.us-west2.run.app/api/goals/delete/${goalId}`, {
         method: "DELETE",
         credentials: "include"
       });

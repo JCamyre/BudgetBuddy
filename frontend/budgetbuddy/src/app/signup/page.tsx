@@ -25,7 +25,7 @@ export default function Signup() {
     }
   
     try {
-      const response = await fetch("http://localhost:8000/api/users/register", {
+      const response = await fetch("https://budgetbuddy-688497269708.us-west2.run.app/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, full_name: "Test User" }),

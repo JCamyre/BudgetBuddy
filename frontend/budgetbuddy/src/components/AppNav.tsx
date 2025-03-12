@@ -14,7 +14,7 @@ const AppNav = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/validate-session', {
+        const response = await fetch('https://budgetbuddy-688497269708.us-west2.run.app/api/validate-session', {
           credentials: 'include'
         });
         
@@ -35,7 +35,7 @@ const AppNav = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch('http://localhost:8000/api/users/logout', {
+      await fetch('https://budgetbuddy-688497269708.us-west2.run.app/api/users/logout', {
         method: 'POST',
         credentials: 'include'
       });

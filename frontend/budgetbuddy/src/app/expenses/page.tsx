@@ -80,7 +80,7 @@ export default function ExpensesPage() {
     
     try {
       // Make request to the track-receipt endpoint
-      const response = await fetch('http://localhost:8000/api/track-receipt', {
+      const response = await fetch('https://budgetbuddy-688497269708.us-west2.run.app/api/track-receipt', {
         method: 'POST',
         body: formData,
       });

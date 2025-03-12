@@ -71,7 +71,7 @@ const Insights = () => {
     setError('')
     
     try {
-      const response = await fetch('http://localhost:8000/api/suggest-budget/', {
+      const response = await fetch('https://budgetbuddy-688497269708.us-west2.run.app/api/suggest-budget/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -100,7 +100,7 @@ const Insights = () => {
     setError('')
     
     try {
-      const response = await fetch('http://localhost:8000/api/suggest-goals/', {
+      const response = await fetch('https://budgetbuddy-688497269708.us-west2.run.app/api/suggest-goals/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

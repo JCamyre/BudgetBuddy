@@ -15,7 +15,7 @@ export default function DashboardLayout({
   useEffect(() => {
     const validateSession = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/validate-session', {
+        const response = await fetch('https://budgetbuddy-688497269708.us-west2.run.app/api/validate-session', {
           credentials: 'include'
         });
         

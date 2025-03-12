@@ -55,7 +55,7 @@ export default function ExpensesPage() {
   const checkAuth = async () => {
     try {
       console.log("Fetching session validation...");
-      const response = await fetch("http://localhost:8000/api/validate-session", {
+      const response = await fetch("https://budgetbuddy-688497269708.us-west2.run.app/api/validate-session", {
         method: "GET",
         credentials: "include",
       });
@@ -89,7 +89,7 @@ export default function ExpensesPage() {
     
       try {
         console.log("Fetching expenses...");
-        const response = await fetch("http://localhost:8000/api/expenses/view", {
+        const response = await fetch("https://budgetbuddy-688497269708.us-west2.run.app/api/expenses/view", {
           method: "GET",
           credentials: "include",
         });
@@ -135,7 +135,7 @@ export default function ExpensesPage() {
 
     try {
       console.log("Uploading receipt:", file.name);
-      const response = await fetch("http://localhost:8000/api/track-receipt", {
+      const response = await fetch("https://budgetbuddy-688497269708.us-west2.run.app/api/track-receipt", {
         method: "POST",
         body: formData,
         credentials: "include",
@@ -205,7 +205,7 @@ export default function ExpensesPage() {
   
     try {
       const response = await fetch(
-        `http://localhost:8000/api/expenses/update/${expenseId}`,
+        `https://budgetbuddy-688497269708.us-west2.run.app/api/expenses/update/${expenseId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -233,7 +233,7 @@ export default function ExpensesPage() {
   const deleteExpense = async (expenseId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/api/expenses/delete/${expenseId}`,
+        `https://budgetbuddy-688497269708.us-west2.run.app/api/expenses/delete/${expenseId}`,
         {
           method: "DELETE",
           credentials: "include",
