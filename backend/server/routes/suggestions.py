@@ -23,7 +23,7 @@ async def get_llm_response(messages):
     )
     return response.choices[0].message.content
 
-@router.post("/suggest-budget/", response_model=Budget)
+@router.post("/api/suggest-budget/", response_model=Budget)
 async def suggest_budget(questionnaire: BudgetQuestionnaire):
     """Suggest a budget based on user's financial situation using LLM."""
     try:
@@ -84,7 +84,7 @@ async def suggest_budget(questionnaire: BudgetQuestionnaire):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/suggest-goals/", response_model=List[str])
+@router.post("/api/suggest-goals/", response_model=List[str])
 async def suggest_goals(questionnaire: GoalQuestionnaire):
     """Suggest financial goals based on user's situation using LLM."""
     try:

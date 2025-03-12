@@ -15,10 +15,10 @@ supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_K
 
 app.add_middleware(
     CORSMiddleware,
-     allow_origins=[
-        "http://localhost:3000",
-        "https://budget-buddy-eight-phi.vercel.app",
-        "https://budgetbuddy-688497269708.us-west2.run.app"
+    allow_origins=[
+        "http://localhost:3000",  # Frontend for local development
+        "https://budgetbuddy-eight-phi.vercel.app",  # Deployed frontend
+        "https://budgetbuddy-688497269708.us-west2.run.app"  # Backend
     ],
     allow_credentials=True,  # Allow cookies/session authentication
     allow_methods=["*"],  # Allow all HTTP methods

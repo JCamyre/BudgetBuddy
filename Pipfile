@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-uvicorn = "*"
 fastapi = "*"
 pillow = "*"
 donut-python = "*"
@@ -14,6 +13,7 @@ python-multipart = "*"
 pyjwt = "*"
 email-validator = "*"
 together = "*"
+uvicorn = "*"
 
 [dev-packages]
 
