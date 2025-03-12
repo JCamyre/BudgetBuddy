@@ -85,7 +85,7 @@ async def login_user(user: UserLogin, response: Response):
             key="access_token", 
             value=auth_response.session.access_token, 
             httponly=True,  
-            samesite='Lax'  
+            samesite='None'  
         )
         return{
             "access_token": auth_response.session.access_token,
