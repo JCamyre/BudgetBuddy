@@ -125,6 +125,17 @@ const Goals = () => {
   
     try {
       console.log("Sending create goal request");
+      
+      // Split the date string into components
+      const [year, month, day] = newGoal.target_date.split('-');
+      
+      // Create a UTC date at midnight (00:00:00 UTC)
+      const utcDate = new Date(Date.UTC(
+        parseInt(year),
+        parseInt(month) - 1, // Months are 0-indexed in JS
+        parseInt(day)
+      ));
+  
       const response = await fetch("http://localhost:8000/api/goals/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,7 +147,7 @@ const Goals = () => {
             current_amount: Number(newGoal.current_progress),
             actionable_amount: Number(newGoal.actionable_amount),
             frequency: newGoal.frequency,
-            deadline: new Date(newGoal.target_date).toISOString()
+            deadline: utcDate.toISOString()
           }
         }),
       });
@@ -148,6 +159,8 @@ const Goals = () => {
   
       const createdGoal = await response.json();
       console.log("Goal created:", createdGoal);
+      
+      // Add the new goal to state with UTC date
       setGoals(prev => [...prev, {
         id: createdGoal.id.toString(),
         goal_name: createdGoal.title,
@@ -155,7 +168,7 @@ const Goals = () => {
         current_progress: createdGoal.current_amount,
         actionable_amount: createdGoal.actionable_amount,
         frequency: createdGoal.frequency,
-        target_date: new Date(createdGoal.deadline).toISOString().split('T')[0]
+        target_date: utcDate.toISOString().split('T')[0] // Store UTC date
       }]);
   
       setShowCreateForm(false);
@@ -433,7 +446,15 @@ const GoalTable = ({
             <td className="p-3">
               Save ${goal.actionable_amount} per {goal.frequency}
             </td>
-            <td className="p-3">{new Date(goal.target_date).toLocaleDateString()}</td>
+            <td className="p-3">
+              {new Date(goal.target_date).toLocaleDateString("en-US", {
+                timeZone: "UTC",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit"
+              })}
+            </td>
+
             <td className="p-3">
               <button
                 onClick={() => onEdit(goal)}

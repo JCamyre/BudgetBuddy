@@ -6,8 +6,9 @@ from supabase import create_client as open_sb
 import os
 import utils.auth as bb_auth
 from ..schemas import GoalCreate, GoalResponse, GoalUpdate
-from ..supabase_client import supabase_client
 from .users import get_current_user
+
+supabase_client = open_sb(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
 router = APIRouter()
 

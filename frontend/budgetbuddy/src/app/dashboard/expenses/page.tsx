@@ -19,14 +19,37 @@ export default function ExpensesPage() {
     business: "",
     category: "",
   });
+  
+  // Add receipt upload states
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   const categoryColors = {
     Entertainment: "text-pink-600",
     Food: "text-green-600",
     Utility: "text-purple-600",
+    Shopping: "text-blue-600",
+    Travel: "text-yellow-600",
+    Pets: "text-orange-600",
+    Medical: "text-red-600",
+    Rent: "text-indigo-600",
+    Transportation: "text-cyan-600",
+    Other: "text-gray-600",
   };
 
-  const categories = ["Entertainment", "Food", "Utility"];
+  const categories = [
+    "Entertainment", 
+    "Food", 
+    "Utility", 
+    "Shopping", 
+    "Travel", 
+    "Pets", 
+    "Medical", 
+    "Rent", 
+    "Transportation", 
+    "Other"
+  ];
 
   // Auth check function
   const checkAuth = async () => {
@@ -102,29 +125,55 @@ export default function ExpensesPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Reset states
+    setIsUploading(true);
+    setUploadError("");
+    setUploadSuccess(false);
+
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8000/api/scan-receipt", {
+      console.log("Uploading receipt:", file.name);
+      const response = await fetch("http://localhost:8000/api/track-receipt", {
         method: "POST",
         body: formData,
         credentials: "include",
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        const newExpense: Transaction = {
-          amount: `$${result.amount}`,
-          business: result.business_name, 
-          category: result.category
-        };
-        setTransactions([...transactions, newExpense]);
-      } else {
-        console.error("Failed to upload receipt");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Failed to upload receipt");
       }
+
+      const result = await response.json();
+      console.log("Receipt processed:", result);
+      
+      // Format the new expense with data from the receipt
+      const newExpense: Transaction = {
+        amount: result.amount ? `$${parseFloat(result.amount).toFixed(2)}` : "$0.00",
+        business: result.business_name || "Unknown Merchant", 
+        category: result.category || "Other"
+      };
+      
+      // Add the new expense to the transactions list
+      setTransactions(prevTransactions => [newExpense, ...prevTransactions]);
+      
+      // Show success message
+      setUploadSuccess(true);
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => {
+        setUploadSuccess(false);
+      }, 3000);
+      
     } catch (error) {
       console.error("Error uploading receipt:", error);
+      setUploadError(error instanceof Error ? error.message : "Failed to upload receipt");
+    } finally {
+      setIsUploading(false);
+      // Reset the file input
+      e.target.value = "";
     }
   };
 
@@ -141,10 +190,19 @@ export default function ExpensesPage() {
 
   const saveEdit = async () => {
     if (editingIndex === null) return;
-
+  
     const expenseId = transactions[editingIndex].id;
     if (!expenseId) return;
-
+  
+    const updatedExpense = {
+      id: String(expenseId),  // ✅ Convert UUID to string
+      amount: Number(editData.amount),
+      category: editData.category,
+      business_name: editData.business,
+    };
+  
+    console.log("Sending update payload:", updatedExpense);
+  
     try {
       const response = await fetch(
         `http://localhost:8000/api/expenses/update/${expenseId}`,
@@ -152,24 +210,25 @@ export default function ExpensesPage() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify(editData),
+          body: JSON.stringify(updatedExpense),
         }
       );
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.detail || "Failed to update expense");
       }
-
-      const updatedExpense = await response.json();
+  
+      const updatedExpenseData = await response.json();
       const updatedTransactions = [...transactions];
-      updatedTransactions[editingIndex] = updatedExpense;
+      updatedTransactions[editingIndex] = updatedExpenseData;
       setTransactions(updatedTransactions);
       setEditingIndex(null);
     } catch (error) {
       console.error("Error updating expense:", error);
     }
   };
+  
 
   const deleteExpense = async (expenseId: string) => {
     try {
@@ -274,7 +333,7 @@ export default function ExpensesPage() {
                     <span className="font-bold">{transaction.amount}</span> -{" "}
                     <span className="italic"> {transaction.business} </span>
                     <span
-                      className={`ml-2 font-semibold ${categoryColors[transaction.category as keyof typeof categoryColors]}`}
+                      className={`ml-2 font-semibold ${categoryColors[transaction.category as keyof typeof categoryColors] || 'text-gray-600'}`}
                     >
                       {transaction.category}
                     </span>
@@ -288,7 +347,7 @@ export default function ExpensesPage() {
                     </button>
                     <button
                       className="text-gray-500 text-sm hover:text-gray-700"
-                      onClick={() => deleteExpense(transaction.id!)}
+                      onClick={() => transaction.id && deleteExpense(transaction.id)}
                     >
                       delete
                     </button>
@@ -348,22 +407,50 @@ export default function ExpensesPage() {
         <div className="sticky top-20 bg-green-900 p-6 rounded-lg shadow-md text-white w-full max-w-full">
           <div className="border-2 border-dashed border-gray-300 p-6 rounded-md text-center">
             <span className="text-4xl">📤</span>
-            <p className="font-semibold mt-2">Choose a file</p>
+            <p className="font-semibold mt-2">Upload a receipt</p>
             <p className="text-sm text-gray-300">JPEG, PNG formats, up to 50MB</p>
 
             <input
               type="file"
               id="file-upload"
               className="hidden"
+              accept="image/jpeg,image/png"
               onChange={handleFileUpload}
+              disabled={isUploading}
             />
 
             <label
               htmlFor="file-upload"
-              className="mt-4 inline-block bg-white text-green-900 px-4 py-2 rounded-md font-semibold cursor-pointer hover:bg-gray-200 transition-all"
+              className={`mt-4 inline-block ${
+                isUploading 
+                  ? "bg-gray-400 cursor-not-allowed" 
+                  : "bg-white text-green-900 hover:bg-gray-200 cursor-pointer"
+              } px-4 py-2 rounded-md font-semibold transition-all`}
             >
-              Browse Files
+              {isUploading ? "Processing Receipt..." : "Browse Files"}
             </label>
+            
+            {/* Upload Status */}
+            {isUploading && (
+              <div className="mt-4 flex flex-col items-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white"></div>
+                <p className="text-sm mt-2">Extracting information from your receipt...</p>
+              </div>
+            )}
+            
+            {/* Success Message */}
+            {uploadSuccess && (
+              <div className="mt-4 bg-green-800 p-2 rounded text-white text-sm animate-pulse">
+                Receipt processed successfully! Transaction added.
+              </div>
+            )}
+            
+            {/* Error Message */}
+            {uploadError && (
+              <div className="mt-4 bg-red-800 p-2 rounded text-white text-sm">
+                {uploadError}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -13,13 +13,25 @@ export default function ExpensesPage() {
     Entertainment: "text-pink-600",
     Food: "text-green-600",
     Utility: "text-purple-600",
+    Shopping: "text-blue-600",
+    Travel: "text-yellow-600",
+    Pets: "text-orange-600",
+    Medical: "text-red-600",
+    Rent: "text-indigo-600",
+    Transportation: "text-cyan-600",
+    Other: "text-gray-600",
   };
 
-  const categories = ["Entertainment", "Food", "Utility"];
+  const categories = ["Entertainment", "Food", "Utility", "Shopping", "Travel", "Pets", "Medical", "Rent", "Transportation", "Other"];
 
   const [searchQuery, setSearchQuery] = useState("");
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState({ amount: "", business: "", category: "" });
+  
+  // Add state for file upload
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   // Filter transactions based on search input
   const filteredTransactions = transactions.filter(
@@ -45,6 +57,68 @@ export default function ExpensesPage() {
     updatedTransactions[editingIndex as number] = editData;
     setTransactions(updatedTransactions);
     setEditingIndex(null);
+  };
+
+  // Handle File Upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    
+    if (!files || files.length === 0) {
+      return;
+    }
+    
+    const file = files[0];
+    
+    // Reset states
+    setIsUploading(true);
+    setUploadError("");
+    setUploadSuccess(false);
+    
+    // Create FormData and append the file
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    try {
+      // Make request to the track-receipt endpoint
+      const response = await fetch('http://localhost:8000/api/track-receipt', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to upload receipt');
+      }
+      
+      // If successful, update UI
+      setUploadSuccess(true);
+      
+      // Simulate adding a new transaction based on uploaded receipt
+      // In a real app, you might want to fetch the actual processed data
+      setTimeout(() => {
+        // Add a new transaction with data that might come from the receipt
+        const newTransaction = {
+          amount: `$${(Math.random() * 100).toFixed(2)}`,
+          business: `Receipt from ${file.name.split('.')[0]}`,
+          category: categories[Math.floor(Math.random() * categories.length)]
+        };
+        
+        setTransactions([newTransaction, ...transactions]);
+        
+        // Reset success message after a delay
+        setTimeout(() => {
+          setUploadSuccess(false);
+        }, 3000);
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error uploading receipt:', error);
+      setUploadError(error instanceof Error ? error.message : 'Failed to upload receipt');
+    } finally {
+      setIsUploading(false);
+      // Reset the file input
+      e.target.value = "";
+    }
   };
 
   return (
@@ -110,7 +184,7 @@ export default function ExpensesPage() {
                   <div>
                     <span className="font-bold">{transaction.amount}</span> -
                     <span className="italic"> {transaction.business} </span>
-                    <span className={`ml-2 font-semibold ${categoryColors[transaction.category as keyof typeof categoryColors]}`}>
+                    <span className={`ml-2 font-semibold ${categoryColors[transaction.category as keyof typeof categoryColors] || 'text-gray-600'}`}>
                       {transaction.category}
                     </span>
                   </div>
@@ -175,7 +249,7 @@ export default function ExpensesPage() {
         <div className="sticky top-20 bg-green-900 p-6 rounded-lg shadow-md text-white w-full max-w-full">
           <div className="border-2 border-dashed border-gray-300 p-6 rounded-md text-center">
             <span className="text-4xl">📤</span>
-            <p className="font-semibold mt-2">Choose a file</p>
+            <p className="font-semibold mt-2">Upload a receipt</p>
             <p className="text-sm text-gray-300">JPEG, PNG formats, up to 50MB</p>
 
             {/* Hidden File Input */}
@@ -183,16 +257,41 @@ export default function ExpensesPage() {
               type="file"
               id="file-upload"
               className="hidden"
-              onChange={(e) => console.log(e.target.files)}
+              accept="image/jpeg,image/png"
+              onChange={handleFileUpload}
+              disabled={isUploading}
             />
 
             {/* Browse Files Button (Clickable) */}
             <label
               htmlFor="file-upload"
-              className="mt-4 inline-block bg-white text-green-900 px-4 py-2 rounded-md font-semibold cursor-pointer hover:bg-gray-200 transition-all"
+              className={`mt-4 inline-block ${
+                isUploading 
+                  ? "bg-gray-400 cursor-not-allowed" 
+                  : "bg-white text-green-900 hover:bg-gray-200 cursor-pointer"
+              } px-4 py-2 rounded-md font-semibold transition-all`}
             >
-              Browse Files
+              {isUploading ? "Uploading..." : "Browse Files"}
             </label>
+            
+            {/* Upload Status Messages */}
+            {uploadError && (
+              <div className="mt-3 text-red-300 text-sm">
+                Error: {uploadError}
+              </div>
+            )}
+            
+            {uploadSuccess && (
+              <div className="mt-3 text-green-300 text-sm animate-pulse">
+                Receipt uploaded successfully! Processing your data...
+              </div>
+            )}
+            
+            {isUploading && (
+              <div className="mt-3 flex justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+              </div>
+            )}
           </div>
         </div>
       </div>
