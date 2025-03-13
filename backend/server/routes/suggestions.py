@@ -54,7 +54,10 @@ async def suggest_budget(questionnaire: BudgetQuestionnaire):
         # Strip any potential whitespace or extra characters
         llm_response = llm_response.strip()
         
-        llm_response = llm_response.split("</think>")[1]
+        # Check if the response contains a thinking section
+        if "</think>" in llm_response:
+            # Extract only the part after </think>
+            llm_response = llm_response.split("</think>")[1]
         
         # Add error handling for JSON parsing
         try:
@@ -115,7 +118,8 @@ async def suggest_goals(questionnaire: GoalQuestionnaire):
         
         llm_response = await get_llm_response(messages)
         
-        llm_response = llm_response.split("</think>")[1]
+        if "</think>" in llm_response:
+            llm_response = llm_response.split("</think>")[1]
         
         # Add error handling for JSON parsing
         try:

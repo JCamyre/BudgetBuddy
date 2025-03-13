@@ -18,6 +18,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",  # Frontend for local development
         "https://budgetbuddy-eight-phi.vercel.app",  # Deployed frontend
+        "https://budget-buddy-eight-phi.vercel.app",  # Additional frontend URL
         "https://budgetbuddy-688497269708.us-west2.run.app"  # Backend
     ],
     allow_credentials=True,  # Allow cookies/session authentication
