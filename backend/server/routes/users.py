@@ -85,7 +85,8 @@ async def login_user(user: UserLogin, response: Response):
             key="access_token", 
             value=auth_response.session.access_token, 
             httponly=True,  
-            samesite='None'  
+            samesite='None',
+            secure=True 
         )
         return{
             "access_token": auth_response.session.access_token,
@@ -135,7 +136,8 @@ async def logout_user(response: Response):
     response.delete_cookie(
         key="access_token",
         httponly=True,
-        samesite="Lax",
+        samesite="None",
+        secure=True,
         domain="localhost",
         path="/"
     )
