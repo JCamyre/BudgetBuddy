@@ -20,12 +20,12 @@ python-multipart = "*"
 donut = "*"
 donut-python = "*"
 timm = "==0.5.4"
-judgeval = "*"
 jwt="*"
 pydantic = {extras = ["email"], version = "*"}
 torch = {version = "*", index = "downloadpytorch"}
 torchvision = {version = "*", index = "downloadpytorch"}
 torchaudio = {version = "*", index = "downloadpytorch"}
+judgeval = "*"
 
 [dev-packages]
 
