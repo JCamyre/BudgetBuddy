@@ -24,6 +24,7 @@ app.add_middleware(
     allow_credentials=True,  # Allow cookies/session authentication
     allow_methods=["*"],  # Allow all HTTP methods
     allow_headers=["*"],  # Allow all headers
+    expose_headers=["set-cookie"]
 )
 
 
